@@ -148,6 +148,7 @@ thong7021@Senadina ~ % curl -s -b session.txt -H "User-Agent: $UA" "$TARGET/" | 
 Vậy là có thể chiếm được credits bằng cách này [2]
 
 #### Sơ đồ tóm tắt:
+```
 Request tuần tự ---> session a: 2 credits; session b: 2 credits;.... ---> AI-Detected 
 
 Request song song |---> Request A ---> check daily_claimed = false ------> CMDX ---->
@@ -157,6 +158,7 @@ Request song song |---> Request A ---> check daily_claimed = false ------> CMDX 
                   |
                   |
                   |---> Request C ---> Drop
+```
 
 Có thể logic của CMDX: is daily_claimed = true ? Reject : (+2 credits and daily_claimed = true) 
 
