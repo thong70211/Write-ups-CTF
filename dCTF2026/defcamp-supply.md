@@ -215,4 +215,4 @@ curl -s -b session.txt -X POST "$TARGET/checkout" \
 > 1. **Race condition** trên `/redeem`: check `daily_claimed` và cộng credit không atomic — bắn nhiều request đồng thời trên cùng 1 session để vượt giới hạn "1 lần/ngày", farm đủ 20 credit.
 > 2. **Client-side-only restriction** trên field `profile`: `<select>` chỉ chặn ở HTML/JS, server không validate lại whitelist trước khi đưa vào subprocess.
 > 3. **Command Injection**: `profile_check.py` dùng `subprocess.run(..., shell=True)` với f-string không escape → `$(...)` command substitution chạy được dù nằm trong double-quote.
-> 4. **Integer Overflow** ở field `eta`: `quantity` âm cực lớn làm phép tính eta tràn số, bypass hàng đợi async, ép order xử lý ngay lập tức.
+> 4. **Thiếu validate** ở field `eta`: `eta` được tính trực tiếp từ`quantity`, nên khi `quantity` âm cực lớn làm phép tính eta tràn số, bypass hàng đợi async, ép order xử lý ngay lập tức.
