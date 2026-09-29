@@ -33,16 +33,7 @@ Khi dùng lệnh /redeem, server sẽ +2 credits cho session hiện tại
 ```
 POST /redeem HTTP/1.1
 Host: 34.179.250.187:32707
-Content-Length: 0
-Cache-Control: max-age=0
-Accept-Language: en-US,en;q=0.9
-Upgrade-Insecure-Requests: 1
-Content-Type: application/x-www-form-urlencoded
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
-Origin: http://34.179.250.187:32707
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
-Referer: http://34.179.250.187:32707/
-Accept-Encoding: gzip, deflate, br
+...
 Cookie: session=eyJfcGVybWFuZW50Ijp0cnVlLCJzdGFydGVkX2F0IjoxNzg5ODgyNDk4LCJ1c2VyX2lkIjoiMTBiMTcxMTdkZmFiNDU3MzkyM2IxOTdhOGI2NDJkMzcifQ.aq9wgg.fX2EOvlgNdPEjobuPyjgWiJhLbc
 Connection: keep-alive
 
@@ -57,21 +48,7 @@ Content-Length: 10047
 Vary: Cookie
 
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>DEFCAMP // Supply Drop</title>
-    <link rel="stylesheet" href="/static/style.css">
-  </head>
-  <body>
-    <main class="shell">
-      <section class="topbar">
-        <div>
-          <p class="eyebrow">DEFCAMP // AUTHORIZED SUPPLY NODE</p>
-          <h1>Build your loadout.</h1>
-        </div>
-        <div class="balance">
+...
           <span>Credits</span>
           <strong>¢2</strong>
 ```
@@ -79,28 +56,14 @@ Nếu loại bỏ giá trị cookie khi POST, server sẽ tự tạo ra một ch
 ```
 POST /redeem HTTP/1.1
 Host: 34.179.250.187:32707
-Content-Length: 0
-Cache-Control: max-age=0
-Accept-Language: en-US,en;q=0.9
-Upgrade-Insecure-Requests: 1
-Content-Type: application/x-www-form-urlencoded
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
-Origin: http://34.179.250.187:32707
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
-Referer: http://34.179.250.187:32707/
-Accept-Encoding: gzip, deflate, br
+...
 Cookie: session=
 Connection: keep-alive
 ```
 ```
 HTTP/1.1 302 FOUND
 Server: gunicorn
-Date: Sun, 20 Sep 2026 05:38:37 GMT
-Connection: keep-alive
-Content-Type: text/html; charset=utf-8
-Content-Length: 189
-Location: /
-Vary: Cookie
+...
 Set-Cookie: session=eyJfcGVybWFuZW50Ijp0cnVlLCJzdGFydGVkX2F0IjoxNzg5ODgyNzE2LCJ1c2VyX2lkIjoiZjM4NGVjNDJhZjBmNGU2YzliNjFmMTk0NjAwMzM1YzYifQ.aq9xXQ.zgE_6i5BVWzzxZ7aVs4D-eyxdNA; Expires=Sun, 20 Sep 2026 06:08:37 GMT; HttpOnly; Path=/
 
 <!doctype html>
